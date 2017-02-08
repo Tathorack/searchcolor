@@ -6,7 +6,7 @@ def readme():
 
 major_version = 0
 minor_version = 0
-build_version = 3
+build_version = 4
 
 version = '{0}.{1}.{2}'.format(major_version, minor_version, build_version)
 

@@ -43,7 +43,8 @@ def average_image_url(url, name):
         result = image_colors.average_single_image(BytesIO(response.content), name=name)
         return(result)
     except Exception:
-        logger.exception('average_image_url Exception @ %s', url, exc_info=True)
+        logger.exception('average_image_url Exception @ %s', url)
+        logger.debug('average_image_url Traceback', exc_info=True)
         return(None)
 
 def _image_search_average(url_list, max_threads=20):
