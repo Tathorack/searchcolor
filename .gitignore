@@ -1,3 +1,7 @@
 build
 dist
 image_search_colors.egg-info
+bin
+include
+lib
+.Python

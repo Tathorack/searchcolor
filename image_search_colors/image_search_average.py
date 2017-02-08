@@ -55,14 +55,14 @@ def _image_search_average(url_list, max_threads=20):
         list of strings with the image urls to average
     max_threads: int
         max number of processes to spawn
-    return ["search term",r,g,b] or None
+    return [r,g,b] or None
     """
     r_total = 0
     b_total = 0
     g_total = 0
     imagecount = 0
     num_results = len(url_list)
-    names = [n for count in range(num_results)]
+    names = [n for n in range(num_results)]
     if num_results <= max_threads:
         threads = num_results
     else:
@@ -77,12 +77,14 @@ def _image_search_average(url_list, max_threads=20):
                 g_total += result[3]
                 imagecount += 1
         except TypeError:
-            logger.debug('TypeError when iterating over results' exc_info=True)
+            logger.debug('TypeError when iterating over results', exc_info=True)
+    logger.debug('Image count %d', imagecount)
     if imagecount > 0:
+        logger.debug('Image count greater then 0')
         r_avg = int(r_total / imagecount)
         g_avg = int(g_total / imagecount)
         b_avg = int(b_total / imagecount)
-        return([search_term, r_avg, g_avg, b_avg])
+        return([r_avg, g_avg, b_avg])
     else:
         return(None)
 
@@ -106,4 +108,5 @@ def google_average(search_term, num_results, api_key, cse_id, max_threads=20):
     result = [search_term]
     GIS = GoogleImageSearch(api_key, cse_id)
     url_list = GIS.search(search_term, num_results)
-    return(result.extend(_image_search_average(url_list, max_threads=max_threads)))
+    result.extend(_image_search_average(url_list, max_threads=max_threads))
+    return(result)

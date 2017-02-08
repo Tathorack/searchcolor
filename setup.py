@@ -6,9 +6,9 @@ def readme():
 
 major_version = 0
 minor_version = 0
-build_version = 2
+build_version = 3
 
-version = str('{0}.{1}.{2}').format(major_version, minor_version, build_version)
+version = '{0}.{1}.{2}'.format(major_version, minor_version, build_version)
 
 setup(name='image_search_colors',
       version=version,
