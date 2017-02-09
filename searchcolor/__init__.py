@@ -1,10 +1,10 @@
 
-from .image_search_average import average_image_url
-from .image_search_average import google_average
+from .average import average_image_url
+from .average import google_average
 
-major_version = 0
+major_version = 1
 minor_version = 0
-build_version = 4
+build_version = 0
 
 __author__ = 'Rhys Hansen'
 __copyright__ = "Copyright 2017, Rhys Hansen"

@@ -4,13 +4,13 @@ def readme():
     with open('README.md') as f:
         return f.read()
 
-major_version = 0
+major_version = 1
 minor_version = 0
-build_version = 4
+build_version = 0
 
 version = '{0}.{1}.{2}'.format(major_version, minor_version, build_version)
 
-setup(name='image_search_colors',
+setup(name='searchcolor',
       version=version,
       description='Image color extraction from web image search',
       long_description=readme(),
@@ -27,8 +27,9 @@ setup(name='image_search_colors',
       author='Rhys Hansen',
       author_email='rhyshonline@gmail.com',
       license='MIT',
-      packages=['image_search_colors'],
+      packages=['searchcolor'],
       install_requires=[
+          'imagecolor>=1.0.0'
           'google-api-python-client',
           'requests',
       ],

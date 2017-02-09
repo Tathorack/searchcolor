@@ -3,9 +3,9 @@ import logging
 from multiprocessing import Pool, cpu_count
 import requests
 
-import image_colors
+import imagecolor
 
-from .web_image_search import GoogleImageSearch
+from .web_image import GoogleImageSearch
 
 """Copyright © 2017 Rhys Hansen
 
@@ -36,11 +36,11 @@ def average_image_url(url, name):
         url for image to average
     name: str
         name to use
-    return ["name",r,g,b] or None
+    return {red':r_avg, 'green':g_avg, 'blue':b_avg} or None
     """
     try:
         response = requests.get(url, timeout=5)
-        result = image_colors.average_single_image(BytesIO(response.content), name=name)
+        result = imagecolor.average(BytesIO(response.content), name=name)
         return(result)
     except Exception:
         logger.exception('average_image_url Exception @ %s', url)
@@ -56,7 +56,7 @@ def _image_search_average(url_list, max_threads=20):
         list of strings with the image urls to average
     max_threads: int
         max number of processes to spawn
-    return [r,g,b] or None
+    return {red':r_avg, 'green':g_avg, 'blue':b_avg} or None
     """
     r_total = 0
     b_total = 0
@@ -73,9 +73,9 @@ def _image_search_average(url_list, max_threads=20):
     for result in results:
         try:
             if result != None:
-                r_total += result[1]
-                b_total += result[2]
-                g_total += result[3]
+                r_total += result.get('red')
+                b_total += result.get('green')
+                g_total += result.get('blue')
                 imagecount += 1
         except TypeError:
             logger.debug('TypeError when iterating over results', exc_info=True)
@@ -85,7 +85,7 @@ def _image_search_average(url_list, max_threads=20):
         r_avg = int(r_total / imagecount)
         g_avg = int(g_total / imagecount)
         b_avg = int(b_total / imagecount)
-        return([r_avg, g_avg, b_avg])
+        return({'red':r_avg, 'green':g_avg, 'blue':b_avg})
     else:
         return(None)
 
@@ -103,11 +103,11 @@ def google_average(search_term, num_results, api_key, cse_id, max_threads=20):
         Google CSE ID
     max_threads: int
         max number of processes to spawn
-    return ["search term",r,g,b] or None
+    return {'name':search_term, 'red':r_avg, 'green':g_avg, 'blue':b_avg} or None
     """
     url_list = []
-    result = [search_term]
+    result = {'name':search_term}
     GIS = GoogleImageSearch(api_key, cse_id)
     url_list = GIS.search(search_term, num_results)
-    result.extend(_image_search_average(url_list, max_threads=max_threads))
+    result.update(_image_search_average(url_list, max_threads=max_threads))
     return(result)
