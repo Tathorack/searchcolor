@@ -31,7 +31,7 @@ setup(name='searchcolor',
       license='MIT',
       packages=['searchcolor'],
       install_requires=[
-          'imagecolor>=1.0.0'
+          'imagecolor>=1.0.0',
           'google-api-python-client',
           'requests',
       ],
