@@ -8,3 +8,4 @@ lib
 
 api_keys.py
 .cache
+searchcolor.egg-info
