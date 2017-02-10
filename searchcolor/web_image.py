@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+#coding=UTF-8
 from googleapiclient.discovery import build
 
 """Copyright © 2017 Rhys Hansen

@@ -19,7 +19,6 @@ Does a Google image search and averages all the images into a singular RGB searc
 * **cse_id** - Google CSE ID.
 * **max_threads** - max processes to spawn. This gets passed to *\_image_search_average(max_threads)*
 
-
 ### Future work
 * add more information to readme
 * build offline tests

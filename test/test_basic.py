@@ -1,9 +1,8 @@
-#stdlib
-#from io import BytesIO
+#!/usr/bin/env python3
+#coding=UTF-8
 import os
 import sys
 #installed
-#from PIL import Image
 import pytest
 #local
 sys.path.append(os.path.split(os.path.split(__file__)[0])[0])

@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+#coding=UTF-8
 from io import BytesIO
 import logging
 from multiprocessing import Pool, cpu_count
