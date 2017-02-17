@@ -4,8 +4,8 @@ from setuptools import setup
 from codecs import open
 
 major_version = 1
-minor_version = 0
-build_version = 3
+minor_version = 1
+build_version = 0
 
 version = '{0}.{1}.{2}'.format(major_version, minor_version, build_version)
 
