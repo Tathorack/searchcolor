@@ -33,7 +33,7 @@ SOFTWARE."""
 
 logger = logging.getLogger(__name__)
 
-class ContentException(Exception):
+class OversizeException(Exception):
     pass
 
 def average_image_url(url, name, timeout=5, max_size=5):
@@ -50,19 +50,23 @@ def average_image_url(url, name, timeout=5, max_size=5):
     return {red':r_avg, 'green':g_avg, 'blue':b_avg} or None
     """
     try:
-        logger.debug('Starting request,    %s', url)
+        shorturl = url.rsplit('/', 1)[-1]
+        logger.debug('Full URL,           %s', url)
         response = requests.get(url, timeout=timeout, stream=True)
         length = int(response.headers.get('Content-Length', 0))
-        logger.debug('Request size %.3fKB, %s', length/1024, url)
+        logger.debug('Request size,       %s - %.2fKB', shorturl, length/1024)
         if length > (1024 * 1024 * max_size):
-            raise ContentException('Response larger than {0}MB, discarding {1}, size {2}MB'.format(max_size, url, math.ceil(length/1024/1024)))
-        logger.debug('Finished request,    %s', url)
+            raise OversizeException('Response size {2}MB, larger than {0}MB, discarding: {1}'.format(max_size, url, math.ceil(length/1024/1024)))
+        logger.debug('Finished request,   %s', shorturl)
         result = imagecolor.average(BytesIO(response.content), name=name)
-        logger.debug('Averaging complete,  %s', url)
+        logger.debug('Averaging complete, %s', shorturl)
         return(result)
-    except Exception:
-        logger.exception('average_image_url Exception @ %s', url)
-        logger.debug('average_image_url Traceback', exc_info=True)
+    except OversizeException as e:
+        logger.warning('Exception: %s', e)
+        return(None)
+    except Exception as e:
+        logger.warning('Exception: %s @ %s', e, url)
+        logger.debug('Traceback:', exc_info=True)
         return(None)
 
 def _image_search_average(url_list, max_threads=20, **kwargs):
