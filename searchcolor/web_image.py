@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 #coding=UTF-8
 from googleapiclient.discovery import build
+from py_bing_search import PyBingImageSearch
+from py_ms_cognitive import PyMsCognitiveImageSearch
 
 """Copyright © 2017 Rhys Hansen
 
@@ -60,3 +62,30 @@ class GoogleImageSearch(object):
             count += 10
         results = results[:num_results]
         return(results)
+
+class BingImageSearch(object):
+    """docstring for ."""
+    def __init__(self, api_key):
+        self.api_key = api_key
+
+    def search(self, search_term, num_results, **kwargs):
+        if num_results > 50:
+            raise ValueError('Number of results requested greater than 50!')
+        bing_image = PyBingImageSearch(self.api_key, search_term, custom_params="&Adult='off'", **kwargs)
+        results = bing_image.search(limit=num_results, format='json')
+        return([r.media_url for r in res])
+
+class MicrosoftCognitiveImageSearch(object):
+    """docstring for ."""
+    def __init__(self, api_key):
+        self.api_key = api_key
+
+    def search(self, search_term, num_results, thumbnail=True, **kwargs):
+        if num_results > 50:
+            raise ValueError('Number of results requested greater than 50!')
+        search_service = PyMsCognitiveImageSearch(self.api_key, search_term, custom_params="&Adult='off'", **kwargs)
+        search_results = search_service.search(limit=num_results, format='json')
+        if thumbnail == True:
+            return([r.thumbnail_url for r in search_results])
+        else:
+            return([r.content_url for r in search_results])
