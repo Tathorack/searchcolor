@@ -83,7 +83,7 @@ class MicrosoftCognitiveImageSearch(object):
     def search(self, search_term, num_results, thumbnail=True, **kwargs):
         if num_results > 50:
             raise ValueError('Number of results requested greater than 50!')
-        search_service = PyMsCognitiveImageSearch(self.api_key, search_term, custom_params="&Adult='off'", **kwargs)
+        search_service = PyMsCognitiveImageSearch(self.api_key, search_term, **kwargs) #custom_params="&safesearch=Off"
         search_results = search_service.search(limit=num_results, format='json')
         if thumbnail == True:
             return([r.thumbnail_url for r in search_results])
