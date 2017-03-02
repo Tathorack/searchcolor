@@ -10,6 +10,7 @@ import requests
 import imagecolor
 
 from .web_image import GoogleImageSearch
+from .web_image import BingImageSearch
 
 """Copyright © 2017 Rhys Hansen
 
@@ -138,5 +139,27 @@ def google_average(search_term, num_results, api_key, cse_id, **kwargs):
     result = {'name':search_term}
     GIS = GoogleImageSearch(api_key, cse_id)
     url_list = GIS.search(search_term, num_results)
+    result.update(_image_search_average(url_list, **kwargs))
+    return(result)
+
+def bing_average(search_term, num_results, api_key, **kwargs):
+    """Does a Bing image search to get the average color of the
+    top x results.
+    Arguments
+    search_term: str
+        tearm to search for
+    num_results: int
+        number of results to average
+    api_key: str
+        Bing API key
+    max_threads: int
+        max number of processes to spawn
+
+    return {'name':search_term, 'red':r_avg, 'green':g_avg, 'blue':b_avg} or None
+    """
+    url_list = []
+    result = {'name':search_term}
+    BIS = BingImageSearch(api_key)
+    url_list = BIS.search(search_term, num_results)
     result.update(_image_search_average(url_list, **kwargs))
     return(result)

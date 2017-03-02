@@ -73,7 +73,7 @@ class BingImageSearch(object):
             raise ValueError('Number of results requested greater than 50!')
         bing_image = PyBingImageSearch(self.api_key, search_term, custom_params="&Adult='off'", **kwargs)
         results = bing_image.search(limit=num_results, format='json')
-        return([r.media_url for r in res])
+        return([r.media_url for r in results])
 
 class MicrosoftCognitiveImageSearch(object):
     """docstring for ."""
