@@ -6,7 +6,7 @@ from .average import bing_average
 from .average import mscs_average
 
 major_version = 1
-minor_version = 2
+minor_version = 3
 build_version = 0
 
 __author__ = 'Rhys Hansen'
