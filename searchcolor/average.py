@@ -36,6 +36,9 @@ logger = logging.getLogger(__name__)
 class OversizeException(Exception):
     pass
 
+class SearchAveragingError(Exception):
+    pass
+
 def average_image_url(url, name, timeout=5, max_size=5):
     """Takes an image url and averages the image.
     Arguments
@@ -69,7 +72,7 @@ def average_image_url(url, name, timeout=5, max_size=5):
         logger.debug('Traceback:', exc_info=True)
         return(None)
 
-def _image_search_average(url_list, max_threads=20, **kwargs):
+def _image_search_average(url_list, max_threads=2, **kwargs):
     """Takes a list of image urls and averages the images to get the
     average color. Designed to be implimented with many methods of
     url sourcing.
@@ -80,6 +83,8 @@ def _image_search_average(url_list, max_threads=20, **kwargs):
         max number of processes to spawn
     return {red':r_avg, 'green':g_avg, 'blue':b_avg} or None
     """
+    if len(url_list) < 1:
+        raise SearchAveragingError('No urls to average')
     r_total = 0
     b_total = 0
     g_total = 0
@@ -110,7 +115,7 @@ def _image_search_average(url_list, max_threads=20, **kwargs):
         b_avg = int(b_total / imagecount)
         return({'red':r_avg, 'green':g_avg, 'blue':b_avg})
     else:
-        return(None)
+        raise SearchAveragingError('Nothing averaged successfully')
 
 def google_average(search_term, num_results, api_key, cse_id, **kwargs):
     """Does a Google image search to get the average color of the
