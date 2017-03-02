@@ -57,6 +57,6 @@ class GoogleImageSearch(object):
                         fileType=self.file_type, start=count,
                         **kwargs).execute()
             results.extend([r['link'] for r in search_results['items']])
-            count += 10
+            count += len(search_results)
         results = results[:num_results]
         return(results)
