@@ -3,6 +3,7 @@
 from .average import average_image_url
 from .average import google_average
 from .average import bing_average
+from .average import mscs_average
 
 major_version = 1
 minor_version = 2

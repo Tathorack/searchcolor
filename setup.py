@@ -33,6 +33,7 @@ setup(name='searchcolor',
         'google-api-python-client',
         'requests',
         'py-bing-search',
+        'py-ms-cognitive',
         ],
     include_package_data=True,
     zip_safe=False)
