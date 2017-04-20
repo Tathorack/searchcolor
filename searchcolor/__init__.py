@@ -5,7 +5,7 @@ from .average import google_average, bing_average, mscs_average
 from .average import SearchColorException, OversizeException, ZeroResultsException
 
 major_version = 1
-minor_version = 3
+minor_version = 4
 build_version = 1
 
 __author__ = 'Rhys Hansen'

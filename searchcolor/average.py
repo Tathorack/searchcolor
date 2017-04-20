@@ -91,8 +91,8 @@ def _image_search_average(url_list, max_threads=2, **kwargs):
     if len(url_list) < 1:
         raise ZeroResultsException('No urls to average')
     r_total = 0
-    b_total = 0
     g_total = 0
+    b_total = 0
     imagecount = 0
     num_results = len(url_list)
     names = [n for n in range(num_results)]
@@ -107,8 +107,8 @@ def _image_search_average(url_list, max_threads=2, **kwargs):
         try:
             if result != None:
                 r_total += result.get('red')
-                b_total += result.get('green')
-                g_total += result.get('blue')
+                g_total += result.get('green')
+                b_total += result.get('blue')
                 imagecount += 1
         except TypeError:
             logger.debug('TypeError when iterating over results', exc_info=True)
