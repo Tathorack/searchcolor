@@ -56,3 +56,13 @@ Future work
 ===========
 * add more information to readme
 * build offline tests
+
+Tests
+=====
+Testing is done with pytest_
+
+.. _pytest: http://docs.pytest.org/en/latest/
+
+Currently tests only the google api. Requires the enviroment variables GOOGLE_SEARCH_API and GOOGLE_SEARCH_CSE to be set to a valid google custom search api and id
+
+Run with ``python3 setup.py test``
