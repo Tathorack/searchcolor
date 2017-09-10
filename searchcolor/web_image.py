@@ -23,6 +23,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE."""
 
+
 class GoogleImageSearch(object):
     """Class for conducting Google Image Searches
     """
@@ -53,10 +54,13 @@ class GoogleImageSearch(object):
         results = []
         count = 1
         while len(results) <= num_results:
-            search_results = self.service.cse().list(q=search_term,
-                        cx=self.cse_id, searchType="image",
-                        fileType=self.file_type, start=count,
-                        **kwargs).execute()
+            search_results = self.service.cse().list(
+                q=search_term,
+                cx=self.cse_id,
+                searchType="image",
+                fileType=self.file_type,
+                start=count,
+                **kwargs).execute()
             results.extend([r['link'] for r in search_results['items']])
             count += len(search_results)
         results = results[:num_results]
@@ -64,16 +68,21 @@ class GoogleImageSearch(object):
 
 
 class MicrosoftCognitiveImageSearch(object):
-    """docstring for ."""
+    """Class for conducting Microsoft Cognitive Image Searches."""
     def __init__(self, api_key):
         self.api_key = api_key
 
     def search(self, search_term, num_results, thumbnail=True, **kwargs):
         if num_results > 50:
             raise ValueError('Number of results requested greater than 50!')
-        search_service = PyMsCognitiveImageSearch(self.api_key, search_term, **kwargs) #custom_params="&safesearch=Off"
-        search_results = search_service.search(limit=num_results, format='json')
-        if thumbnail == True:
+        search_service = PyMsCognitiveImageSearch(
+            self.api_key,
+            search_term,
+            **kwargs)  # custom_params="&safesearch=Off"
+        search_results = search_service.search(
+            limit=num_results,
+            format='json')
+        if thumbnail is True:
             return([r.thumbnail_url for r in search_results])
         else:
             return([r.content_url for r in search_results])

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#coding=UTF-8
+# coding=UTF-8
 from functools import partial
 from io import BytesIO
 import logging
@@ -10,7 +10,6 @@ import requests
 import imagecolor
 
 from .web_image import GoogleImageSearch
-from .web_image import BingImageSearch
 from .web_image import MicrosoftCognitiveImageSearch
 
 """Copyright © 2017 Rhys Hansen
@@ -35,14 +34,18 @@ SOFTWARE."""
 
 logger = logging.getLogger(__name__)
 
+
 class SearchColorException(Exception):
     pass
+
 
 class OversizeException(SearchColorException):
     pass
 
+
 class ZeroResultsException(SearchColorException):
     pass
+
 
 def average_image_url(url, name, timeout=5, max_size=5):
     """Takes an image url and averages the image.
@@ -64,7 +67,9 @@ def average_image_url(url, name, timeout=5, max_size=5):
         length = int(response.headers.get('Content-Length', 0))
         logger.debug('Request size,       %s - %.2fKB', shorturl, length/1024)
         if length > (1024 * 1024 * max_size):
-            raise OversizeException('Response size {2}MB, larger than {0}MB, discarding: {1}'.format(max_size, url, math.ceil(length/1024/1024)))
+            raise OversizeException(
+                'Response size {2}MB, larger than {0}MB, discarding: {1}'
+                .format(max_size, url, math.ceil(length/1024/1024)))
         logger.debug('Finished request,   %s', shorturl)
         result = imagecolor.average(BytesIO(response.content), name=name)
         logger.debug('Averaging complete, %s', shorturl)
@@ -76,6 +81,7 @@ def average_image_url(url, name, timeout=5, max_size=5):
         logger.warning('Exception: %s @ %s', e, url)
         logger.debug('Traceback:', exc_info=True)
         return(None)
+
 
 def _image_search_average(url_list, max_threads=2, **kwargs):
     """Takes a list of image urls and averages the images to get the
@@ -101,26 +107,29 @@ def _image_search_average(url_list, max_threads=2, **kwargs):
     else:
         threads = max_threads
     with Pool(threads) as p:
-        results = p.starmap(partial(average_image_url, **kwargs), zip(url_list, names))
+        results = p.starmap(partial(
+            average_image_url, **kwargs), zip(url_list, names))
     logger.debug('All results averaged')
     for result in results:
         try:
-            if result != None:
-                r_total += result.get('red')
-                g_total += result.get('green')
-                b_total += result.get('blue')
+            if result is not None:
+                r_total += result['red']
+                g_total += result['green']
+                b_total += result['blue']
                 imagecount += 1
         except TypeError:
-            logger.debug('TypeError when iterating over results', exc_info=True)
+            logger.debug('TypeError when iterating over results',
+                         exc_info=True)
     logger.debug('Image count %d', imagecount)
     if imagecount > 0:
         logger.debug('Image count greater then 0')
         r_avg = int(r_total / imagecount)
         g_avg = int(g_total / imagecount)
         b_avg = int(b_total / imagecount)
-        return({'red':r_avg, 'green':g_avg, 'blue':b_avg})
+        return({'red': r_avg, 'green': g_avg, 'blue': b_avg})
     else:
         raise ZeroResultsException('Nothing averaged successfully')
+
 
 def google_average(search_term, num_results, api_key, cse_id, **kwargs):
     """Does a Google image search to get the average color of the
@@ -137,10 +146,11 @@ def google_average(search_term, num_results, api_key, cse_id, **kwargs):
     max_threads: int
         max number of processes to spawn
 
-    return {'name':search_term, 'red':r_avg, 'green':g_avg, 'blue':b_avg} or None
+    return {'name':search_term, 'red':r_avg, 'green':g_avg, 'blue':b_avg}
+    or None
     """
     url_list = []
-    result = {'name':search_term}
+    result = {'name': search_term}
     GIS = GoogleImageSearch(api_key, cse_id)
     url_list = GIS.search(search_term, num_results)
     result.update(_image_search_average(url_list, **kwargs))
@@ -160,10 +170,11 @@ def mscs_average(search_term, num_results, api_key, **kwargs):
     max_threads: int
         max number of processes to spawn
 
-    return {'name':search_term, 'red':r_avg, 'green':g_avg, 'blue':b_avg} or None
+    return {'name':search_term, 'red':r_avg, 'green':g_avg, 'blue':b_avg}
+    or None
     """
     url_list = []
-    result = {'name':search_term}
+    result = {'name': search_term}
     MCIS = MicrosoftCognitiveImageSearch(api_key)
     url_list = MCIS.search(search_term, num_results)
     result.update(_image_search_average(url_list, **kwargs))
