@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-#coding=UTF-8
+# coding=UTF-8
 from setuptools import setup
 from codecs import open
 
-major_version = 1
-minor_version = 4
-build_version = 1
+major_version = 2
+minor_version = 0
+build_version = 0
 
 version = '{0}.{1}.{2}'.format(major_version, minor_version, build_version)
 
@@ -32,7 +32,6 @@ setup(name='searchcolor',
         'imagecolor>=1.0.0',
         'google-api-python-client',
         'requests',
-        'py-bing-search',
         'py-ms-cognitive',
         ],
     include_package_data=True,
