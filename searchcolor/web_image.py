@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # coding=UTF-8
+import logging
 from googleapiclient.discovery import build
 from py_ms_cognitive import PyMsCognitiveImageSearch
 from .exceptions import ZeroResultsException
@@ -23,6 +24,8 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE."""
+
+logger = logging.getLogger(__name__)
 
 
 class GoogleImageSearch(object):
@@ -52,27 +55,26 @@ class GoogleImageSearch(object):
             number of url results to return
         return ['url','url']
         """
+        results = []
+        count = 1
         try:
-            results = []
-            count = 1
-            try:
-                while len(results) <= num_results:
-                    search_results = self.service.cse().list(
-                        q=search_term,
-                        cx=self.cse_id,
-                        searchType="image",
-                        fileType=self.file_type,
-                        start=count,
-                        **kwargs).execute()
-                    results.extend(
-                        [r['link'] for r in search_results['items']])
-                    count += len(search_results)
-                results = results[:num_results]
-            except KeyError as e:
-                logger.warning('Exception: %s', e)
-            if len(results) == 0:
-                raise ZeroResultsException("No images found")
-            return(results)
+            while len(results) <= num_results:
+                search_results = self.service.cse().list(
+                    q=search_term,
+                    cx=self.cse_id,
+                    searchType="image",
+                    fileType=self.file_type,
+                    start=count,
+                    **kwargs).execute()
+                results.extend(
+                    [r['link'] for r in search_results['items']])
+                count += len(search_results)
+            results = results[:num_results]
+        except KeyError as e:
+            logger.warning('Exception: %s', e)
+        if len(results) == 0:
+            raise ZeroResultsException("No images found")
+        return(results)
 
 
 class MicrosoftCognitiveImageSearch(object):

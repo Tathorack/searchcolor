@@ -6,7 +6,7 @@ from .exceptions import SearchColorException, OversizeException, ZeroResultsExce
 
 major_version = 2
 minor_version = 1
-build_version = 0
+build_version = 3
 
 __author__ = 'Rhys Hansen'
 __copyright__ = "Copyright 2017, Rhys Hansen"
