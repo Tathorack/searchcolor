@@ -11,6 +11,7 @@ import imagecolor
 
 from .web_image import GoogleImageSearch
 from .web_image import MicrosoftCognitiveImageSearch
+from .exceptions import OversizeException, ZeroResultsException
 
 """Copyright © 2017 Rhys Hansen
 
@@ -33,18 +34,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE."""
 
 logger = logging.getLogger(__name__)
-
-
-class SearchColorException(Exception):
-    pass
-
-
-class OversizeException(SearchColorException):
-    pass
-
-
-class ZeroResultsException(SearchColorException):
-    pass
 
 
 def average_image_url(url, name, timeout=5, max_size=5):

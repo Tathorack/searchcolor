@@ -2,10 +2,10 @@
 # coding=UTF-8
 from .average import average_image_url
 from .average import google_average, mscs_average
-from .average import SearchColorException, OversizeException, ZeroResultsException
+from .exceptions import SearchColorException, OversizeException, ZeroResultsException
 
 major_version = 2
-minor_version = 0
+minor_version = 1
 build_version = 0
 
 __author__ = 'Rhys Hansen'
