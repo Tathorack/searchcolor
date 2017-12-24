@@ -3,7 +3,7 @@
 import logging
 from googleapiclient.discovery import build
 from py_ms_cognitive import PyMsCognitiveImageSearch
-from .exceptions import ZeroResultsException
+from .exceptions import APIKeyException, ZeroResultsException
 
 """Copyright © 2017 Rhys Hansen
 
@@ -25,13 +25,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE."""
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 class GoogleImageSearch(object):
-    """Class for conducting Google Image Searches
-    """
-    def __init__(self, api_key, cse_id, file_type='jpg'):
+    """Class for conducting Google Image Searches."""
+    def __init__(self, api_keys, file_type='jpg'):
         """Set up search object with your API key and CSE ID
         api_key: str
             Google API key
@@ -40,10 +39,16 @@ class GoogleImageSearch(object):
         file_type: str
             file type restriction
         """
-        self.api_key = api_key
-        self.cse_id = cse_id
+        if len(api_keys) < 2:
+            raise APIKeyException(
+                "GoogleImageSearch requires both a API key "
+                "and a CSE ID, They must be passed to "
+                "api_keys as a tuple or list formatted as "
+                "follows (api_key, cse_id)")
+        self.api_key = api_keys[0]
+        self.cse_id = api_keys[1]
         self.file_type = file_type
-        self.service = build("customsearch", "v1", developerKey=api_key)
+        self.service = build("customsearch", "v1", developerKey=self.api_key)
 
     def search(self, search_term, num_results, **kwargs):
         """Gets x number of Google image result urls for
@@ -70,11 +75,11 @@ class GoogleImageSearch(object):
                     [r['link'] for r in search_results['items']])
                 count += len(search_results)
             results = results[:num_results]
-        except KeyError as e:
-            logger.warning('Exception: %s', e)
-        if len(results) == 0:
+        except KeyError as exc:
+            LOGGER.warning('Exception: %s', exc)
+        if not results:
             raise ZeroResultsException("No images found")
-        return(results)
+        return results
 
 
 class MicrosoftCognitiveImageSearch(object):
@@ -83,6 +88,15 @@ class MicrosoftCognitiveImageSearch(object):
         self.api_key = api_key
 
     def search(self, search_term, num_results, thumbnail=True, **kwargs):
+        """Gets x number of Bing image result urls for
+        a given search term.
+        Arguments
+        search_term: str
+            tearm to search for
+        num_results: int
+            number of url results to return
+        return ['url','url']
+        """
         if num_results > 50:
             raise ValueError('Number of results requested greater than 50!')
         search_service = PyMsCognitiveImageSearch(
@@ -92,7 +106,6 @@ class MicrosoftCognitiveImageSearch(object):
         search_results = search_service.search(
             limit=num_results,
             format='json')
-        if thumbnail is True:
+        if thumbnail:
             return([r.thumbnail_url for r in search_results])
-        else:
-            return([r.content_url for r in search_results])
+        return([r.content_url for r in search_results])

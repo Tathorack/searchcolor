@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
 # coding=UTF-8
+
+"""Core search color functions for averaging images"""
+
 from functools import partial
 from io import BytesIO
 import logging
 import math
-from multiprocessing import Pool, cpu_count
+from multiprocessing import Pool as ProcessPool
+from multiprocessing.pool import ThreadPool
+
 import requests
 
 import imagecolor
@@ -62,109 +67,99 @@ def average_image_url(url, name, timeout=5, max_size=5):
         logger.debug('Finished request,   %s', shorturl)
         result = imagecolor.average(BytesIO(response.content), name=name)
         logger.debug('Averaging complete, %s', shorturl)
-        return(result)
-    except OversizeException as e:
-        logger.warning('Exception: %s', e)
-        return(None)
-    except Exception as e:
-        logger.warning('Exception: %s @ %s', e, url)
+        return result
+    except OversizeException as exc:
+        logger.warning('Exception: %s', exc)
+        return None
+    except requests.RequestException as exc:
+        logger.warning('Exception: %s @ %s', exc, url)
         logger.debug('Traceback:', exc_info=True)
-        return(None)
+        return None
 
+def url_list_averages_constructor(pool_executor):
+    def url_list_averages(url_list, max_workers=None, **kwargs):
+        """Takes a list of image urls and averages the images to get the
+        average color. Designed to be implimented with many methods of
+        url sourcing.
+        Arguments
+        url_list: list
+            list of strings with the image urls to average
+        max_threads: int
+            max number of processes to spawn
+        return {red':r_avg, 'green':g_avg, 'blue':b_avg} or None
+        """
+        if len(url_list) < 1:
+            raise ZeroResultsException('No urls to average')
+        r_total = 0
+        g_total = 0
+        b_total = 0
+        imagecount = 0
+        num_results = len(url_list)
+        names = [n for n in range(num_results)]
+        with pool_executor(processes=max_workers) as executor:
+            results = executor.starmap(partial(average_image_url, **kwargs), zip(url_list, names))
+        logger.debug('All results averaged')
+        for result in results:
+            try:
+                if result is not None:
+                    r_total += result['red']
+                    g_total += result['green']
+                    b_total += result['blue']
+                    imagecount += 1
+            except TypeError:
+                logger.debug('TypeError when iterating over results',
+                             exc_info=True)
+        logger.debug('Image count %d', imagecount)
+        if imagecount > 0:
+            logger.debug('Image count greater then 0')
+            r_avg = int(r_total / imagecount)
+            g_avg = int(g_total / imagecount)
+            b_avg = int(b_total / imagecount)
+            return({'red': r_avg, 'green': g_avg, 'blue': b_avg})
+        else:
+            raise ZeroResultsException('Nothing averaged successfully')
+    return url_list_averages
 
-def _image_search_average(url_list, max_threads=2, **kwargs):
-    """Takes a list of image urls and averages the images to get the
-    average color. Designed to be implimented with many methods of
-    url sourcing.
-    Arguments
-    url_list: list
-        list of strings with the image urls to average
-    max_threads: int
-        max number of processes to spawn
-    return {red':r_avg, 'green':g_avg, 'blue':b_avg} or None
-    """
-    if len(url_list) < 1:
-        raise ZeroResultsException('No urls to average')
-    r_total = 0
-    g_total = 0
-    b_total = 0
-    imagecount = 0
-    num_results = len(url_list)
-    names = [n for n in range(num_results)]
-    if num_results <= max_threads:
-        threads = num_results
-    else:
-        threads = max_threads
-    with Pool(threads) as p:
-        results = p.starmap(partial(
-            average_image_url, **kwargs), zip(url_list, names))
-    logger.debug('All results averaged')
-    for result in results:
-        try:
-            if result is not None:
-                r_total += result['red']
-                g_total += result['green']
-                b_total += result['blue']
-                imagecount += 1
-        except TypeError:
-            logger.debug('TypeError when iterating over results',
-                         exc_info=True)
-    logger.debug('Image count %d', imagecount)
-    if imagecount > 0:
-        logger.debug('Image count greater then 0')
-        r_avg = int(r_total / imagecount)
-        g_avg = int(g_total / imagecount)
-        b_avg = int(b_total / imagecount)
-        return({'red': r_avg, 'green': g_avg, 'blue': b_avg})
-    else:
-        raise ZeroResultsException('Nothing averaged successfully')
+def web_average(service, pool_executor):
+    url_list_averages = url_list_averages_constructor(pool_executor)
+    def service_average(search_term, num_results, api_keys, **kwargs):
+        """Does a image search to get the average color of the
+        top x results.
+        Arguments
+        search_term: str
+            tearm to search for
+        num_results: int
+            number of results to average
+        api_key: str
+            Google API key
+        cse_id: str
+            Google CSE ID
+        max_threads: int
+            max number of processes to spawn
 
+        return {'name':search_term, 'red':r_avg, 'green':g_avg, 'blue':b_avg}
+        or None
+        """
+        url_list = []
+        result = {'name': search_term}
+        web_search = service(api_keys)
+        url_list = web_search.search(search_term, num_results)
+        result.update(url_list_averages(url_list, **kwargs))
+        return result
+    return service_average
 
-def google_average(search_term, num_results, api_key, cse_id, **kwargs):
-    """Does a Google image search to get the average color of the
-    top x results.
-    Arguments
-    search_term: str
-        tearm to search for
-    num_results: int
-        number of results to average
-    api_key: str
-        Google API key
-    cse_id: str
-        Google CSE ID
-    max_threads: int
-        max number of processes to spawn
+def google_average_process(search_term, num_results, api_keys, **kwargs):
+    func = web_average(GoogleImageSearch, ProcessPool)
+    return func(search_term, num_results, api_keys, **kwargs)
 
-    return {'name':search_term, 'red':r_avg, 'green':g_avg, 'blue':b_avg}
-    or None
-    """
-    url_list = []
-    result = {'name': search_term}
-    GIS = GoogleImageSearch(api_key, cse_id)
-    url_list = GIS.search(search_term, num_results)
-    result.update(_image_search_average(url_list, **kwargs))
-    return(result)
+def google_average_threads(search_term, num_results, api_keys, **kwargs):
+    func = web_average(GoogleImageSearch, ThreadPool)
+    return func(search_term, num_results, api_keys, **kwargs)
 
+def mscs_average_process(search_term, num_results, api_keys, **kwargs):
+    func = web_average(MicrosoftCognitiveImageSearch, ProcessPool)
+    return func(search_term, num_results, api_keys, **kwargs)
 
-def mscs_average(search_term, num_results, api_key, **kwargs):
-    """Does a Microsoft Cognitive image search to get the average color of the
-    top x results.
-    Arguments
-    search_term: str
-        tearm to search for
-    num_results: int
-        number of results to average
-    api_key: str
-        Microsoft Cognitive API key
-    max_threads: int
-        max number of processes to spawn
-
-    return {'name':search_term, 'red':r_avg, 'green':g_avg, 'blue':b_avg}
-    or None
-    """
-    url_list = []
-    result = {'name': search_term}
-    MCIS = MicrosoftCognitiveImageSearch(api_key)
-    url_list = MCIS.search(search_term, num_results)
-    result.update(_image_search_average(url_list, **kwargs))
-    return(result)
+def mscs_average_threads(search_term, num_results, api_keys, **kwargs):
+    func = web_average(MicrosoftCognitiveImageSearch, ThreadPool)
+    return func(search_term, num_results, api_keys, **kwargs)
